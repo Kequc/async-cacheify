@@ -1,49 +1,56 @@
 module.exports = asyncCacheify;
 
+const crypto = require('crypto');
+const paramToString = require('param-to-string');
+
 function asyncCacheify (promise, ms) {
-    let waiting = [];
-    let loading = false;
-    let result;
-    let resultAt;
+    const CACHE = {};
 
-    return cached;
+    async function cached (...params) {
+        const hash = md5(params);
 
-    async function cached (force = false) {
-        if (loading) {
+        if (!CACHE[hash]) {
+            CACHE[hash] = {
+                waiting: [],
+                loading: false,
+                result: undefined,
+                resultAt: undefined
+            };
+        }
+
+        const cache = CACHE[hash];
+
+        if (cache.loading) {
             return await new Promise((resolve, reject) => {
-                waiting.push({ resolve, reject });
+                cache.waiting.push({ resolve, reject });
             });
         }
 
-        if (force) {
-            resultAt = undefined;
-        }
-
-        if (hasCache()) {
-            return result;
+        if (hasCache(cache.resultAt, ms)) {
+            return cache.result;
         }
 
         try {
-            loading = true;
-            const _result = await promise();
-            result = _result;
-            resultAt = Date.now();
-            loading = false;
+            cache.loading = true;
+            const _result = await promise(...params);
+            cache.result = _result;
+            cache.resultAt = Date.now();
+            cache.loading = false;
 
             setTimeout(function resolveAll() {
-                while (waiting.length > 0) {
-                    waiting.shift().resolve(_result);
+                while (cache.waiting.length > 0) {
+                    cache.waiting.shift().resolve(_result);
                 }
             }, 0);
 
-            return result;
+            return cache.result;
         } catch (e) {
-            resultAt = undefined;
-            loading = false;
+            cache.resultAt = undefined;
+            cache.loading = false;
 
             setTimeout(function rejectAll() {
-                while (waiting.length > 0) {
-                    waiting.shift().reject(e);
+                while (cache.waiting.length > 0) {
+                    cache.waiting.shift().reject(e);
                 }
             }, 0);
 
@@ -51,9 +58,30 @@ function asyncCacheify (promise, ms) {
         }
     }
 
-    function hasCache() {
-        if (!resultAt) return false;
-        if (typeof ms === 'number' && (resultAt + ms) < Date.now()) return false;
-        return true;
+    async function force (...params) {
+        delete CACHE[md5(params)];
+        return await cached(...params);
     }
+
+    function clear () {
+        const keys = Object.keys(CACHE);
+        while (keys.length > 0) {
+            delete CACHE[keys.shift()];
+        }
+    }
+
+    cached.force = force;
+    cached.clear = clear;
+
+    return cached;
+}
+
+function md5 (params) {
+    return crypto.createHash('md5').update(paramToString(params)).digest('hex');
+}
+
+function hasCache (resultAt, ms) {
+    if (!resultAt) return false;
+    if (typeof ms === 'number' && (resultAt + ms) < Date.now()) return false;
+    return true;
 }

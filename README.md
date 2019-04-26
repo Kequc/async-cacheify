@@ -27,6 +27,26 @@ const results = await Promise.all([
 
 We are able to run `cheapFunction` a lot for free.
 
+## Parameters
+
+You can use parameters as you would expect.
+
+Any parameters you pass create a new cache only relevant for when those specific parameters are used again. In the following example the function will run twice, one time with `'x', 'y'` and then with `'q', 'y'`.
+
+```javascript
+const cacheify = require('async-cacheify');
+
+async function expensiveFunction (x, y) {
+    return await expensiveThing(x, y, 'z');
+}
+const cheapFunction = cacheify(expensiveFunction);
+
+const result1 = await cheapFunction('x', 'y');
+const result2 = await cheapFunction('q', 'y');
+const result3 = await cheapFunction('q', 'y');
+const result4 = await cheapFunction('x', 'y');
+```
+
 ## Cache expiry
 
 It is possible to set a cache expiry so that the function will execute again, the example below uses a 1000 ms cooldown.
@@ -34,8 +54,8 @@ It is possible to set a cache expiry so that the function will execute again, th
 ```javascript
 const cacheify = require('async-cacheify');
 
-async function expensiveFunction () {
-    return await expensiveThing('x', 'y', 'z');
+async function expensiveFunction (x, y) {
+    return await expensiveThing(x, y, 'z');
 }
 const cheapFunction = cacheify(expensiveFunction, 1000);
 ```
@@ -47,35 +67,56 @@ By setting the cache expiry to `0` you will not have the benefit of a long runni
 ```javascript
 const cacheify = require('async-cacheify');
 
-async function expensiveFunction () {
-    return await expensiveThing('x', 'y', 'z');
+async function expensiveFunction (x, y) {
+    return await expensiveThing(x, y, 'z');
 }
 const cheapFunction = cacheify(expensiveFunction, 0);
 
-const [result1, result2] = await Promise.all([cheapFunction(), cheapFunction()]);
+const [result1, result2] = await Promise.all([
+    cheapFunction('x', 'y'),
+    cheapFunction('x', 'y')
+]);
 ```
 
 ## Cache breaking
 
-It is possible to force the function to run by passing `true` as the first argument, the example below breaks the cache twice. If there is already an invocation running that invocation takes precidence and will share the result.
+It is possible to force the function to run by using `force`, the example below breaks the cache twice. If there is already an invocation running that invocation takes precidence and will share the result.
 
 ```javascript
 const cacheify = require('async-cacheify');
 
-async function expensiveFunction () {
-    return await expensiveThing('x', 'y', 'z');
+async function expensiveFunction (x, y) {
+    return await expensiveThing(x, y, 'z');
 }
 const cheapFunction = cacheify(expensiveFunction);
 
-const result1 = await cheapFunction();
-const result2 = await cheapFunction(true);
-const result3 = await cheapFunction();
-const result4 = await cheapFunction(true);
+const result1 = await cheapFunction('x', 'y');
+const result2 = await cheapFunction.force('x', 'y');
+const result3 = await cheapFunction('x', 'y');
+const result4 = await cheapFunction.force('x', 'y');
+```
+
+You can clear the cache for the entire function and not just specific parameters by using `clear`.
+
+```javascript
+const cacheify = require('async-cacheify');
+
+async function expensiveFunction (x, y) {
+    return await expensiveThing(x, y, 'z');
+}
+const cheapFunction = cacheify(expensiveFunction);
+
+const result1 = await cheapFunction('x', 'y');
+const result2 = await cheapFunction('x', 'y');
+cheapFunction.clear();
+const result3 = await cheapFunction('x', 'y');
+const result4 = await cheapFunction('q', 'y');
+cheapFunction.clear();
 ```
 
 ## Errors
 
-Any error thrown throws for all, and then the cache is cleared. Therefore further invocations will keep trying to get it to work until there is a cache again.
+Any error thrown clears the cache for the parameters provided. Therefore further invocations will keep trying to get it to work until there is a cache again.
 
 ```javascript
 const cacheify = require('async-cacheify');

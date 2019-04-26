@@ -72,7 +72,21 @@ it('returns uncached result after timeout', async () => {
     assert.strict.equal(result4, 'fake-result');
 });
 
-it('forces the cache to reset when true is passed', async () => {
+it('forces the cache to reset when force is used', async () => {
+    let count = 0;
+    const cacheified = asyncCacheify(async function () {
+        count++;
+        return 'fake-result';
+    });
+    const result1 = await cacheified.force();
+    assert.strict.equal(count, 1);
+    assert.strict.equal(result1, 'fake-result');
+    const result2 = await cacheified.force();
+    assert.strict.equal(count, 2);
+    assert.strict.equal(result2, 'fake-result');
+});
+
+it('clears the cache when clear is used', async () => {
     let count = 0;
     const cacheified = asyncCacheify(async function () {
         count++;
@@ -81,7 +95,8 @@ it('forces the cache to reset when true is passed', async () => {
     const result1 = await cacheified();
     assert.strict.equal(count, 1);
     assert.strict.equal(result1, 'fake-result');
-    const result2 = await cacheified(true);
+    cacheified.clear();
+    const result2 = await cacheified();
     assert.strict.equal(count, 2);
     assert.strict.equal(result2, 'fake-result');
 });
@@ -153,4 +168,34 @@ it('throws all when results were queued', async () => {
     assert.strict.equal(count, 1);
     assert.strict.equal(results.length, 4);
     assert.strict.equal(results.filter(result => result.message === 'fake-error').length, 4);
+});
+
+it('returns result when params provided', async () => {
+    let count = 0;
+    const params = [];
+    const cacheified = asyncCacheify(async function (..._params) {
+        count++;
+        params.push(_params);
+        return 'fake-result';
+    });
+    const [result1, result2] = await Promise.all([cacheified(11, 21), cacheified(11, 21)]);
+    assert.strict.equal(count, 1);
+    assert.deepEqual(params, [[11, 21]]);
+    assert.strict.equal(result1, 'fake-result');
+    assert.strict.equal(result2, 'fake-result');
+});
+
+it('returns uncached result when unmatched params provided', async () => {
+    let count = 0;
+    const params = [];
+    const cacheified = asyncCacheify(async function (..._params) {
+        count++;
+        params.push(_params);
+        return 'fake-result';
+    });
+    const [result1, result2] = await Promise.all([cacheified(11, 21), cacheified(11, 20)]);
+    assert.strict.equal(count, 2);
+    assert.deepEqual(params, [[11, 21], [11, 20]]);
+    assert.strict.equal(result1, 'fake-result');
+    assert.strict.equal(result2, 'fake-result');
 });
