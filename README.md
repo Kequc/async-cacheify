@@ -85,7 +85,7 @@ const cacheify = require('async-cacheify');
 async function expensiveFunction () {
     throw new Error('Kabooooooom!');
 }
-const cheapFunction = cacheify(expensiveFunction, 0);
+const cheapFunction = cacheify(expensiveFunction);
 
 try {
     const [result1, result2] = await Promise.all([cheapFunction(), cheapFunction()]);
