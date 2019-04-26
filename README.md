@@ -9,9 +9,10 @@ We can expect `expensiveFunction` is something we don't want to run very often. 
 ```javascript
 const cacheify = require('async-cacheify');
 
-const cheapFunction = cacheify(async function expensiveFunction () {
+async function expensiveFunction () {
     return await expensiveThing('x', 'y', 'z');
-});
+}
+const cheapFunction = cacheify(expensiveFunction);
 
 const results = await Promise.all([
     cheapFunction(),
@@ -36,7 +37,6 @@ const cacheify = require('async-cacheify');
 async function expensiveFunction () {
     return await expensiveThing('x', 'y', 'z');
 }
-
 const cheapFunction = cacheify(expensiveFunction, 1000);
 ```
 
@@ -50,7 +50,6 @@ const cacheify = require('async-cacheify');
 async function expensiveFunction () {
     return await expensiveThing('x', 'y', 'z');
 }
-
 const cheapFunction = cacheify(expensiveFunction, 0);
 
 const [result1, result2] = await Promise.all([cheapFunction(), cheapFunction()]);
@@ -63,9 +62,10 @@ It is possible to force the function to run by passing `true` as the first argum
 ```javascript
 const cacheify = require('async-cacheify');
 
-const cheapFunction = cacheify(async function expensiveFunction () {
+async function expensiveFunction () {
     return await expensiveThing('x', 'y', 'z');
-});
+}
+const cheapFunction = cacheify(expensiveFunction);
 
 const result1 = await cheapFunction();
 const result2 = await cheapFunction(true);
@@ -75,9 +75,24 @@ const result4 = await cheapFunction(true);
 
 ## Errors
 
-The actual error thrown only occurs if the function was actually running. The rest are rejected with `'async_error'`. I consider this a best practice as throwing the same error multiple times when it only really occured once feels incorrect.
+The actual error thrown only occurs once every time it occurs. If anything it would have shared the result with were waiting they are rejected with `'async_error'` afterward. I consider this a best practice as throwing the same error multiple times when it only really occured once feels incorrect.
 
 If an error is thrown the cache is cleared.
+
+```javascript
+const cacheify = require('async-cacheify');
+
+async function expensiveFunction () {
+    throw new Error('Kabooooooom!');
+}
+const cheapFunction = cacheify(expensiveFunction, 0);
+
+try {
+    const [result1, result2] = await Promise.all([cheapFunction(), cheapFunction()]);
+} catch (e) {
+    console.log(e.message); // Kabooooooom!
+}
+```
 
 ## Contribute
 
