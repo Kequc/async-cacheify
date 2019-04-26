@@ -86,7 +86,12 @@ async function expensiveFunction () {
 const cheapFunction = cacheify(expensiveFunction);
 
 try {
-    const [result1, result2] = await Promise.all([cheapFunction(), cheapFunction()]);
+    await Promise.all([cheapFunction(), cheapFunction()]);
+} catch (e) {
+    console.log(e.message); // Kabooooooom!
+}
+try {
+    await cheapFunction();
 } catch (e) {
     console.log(e.message); // Kabooooooom!
 }
