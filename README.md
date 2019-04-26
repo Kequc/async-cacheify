@@ -75,7 +75,7 @@ const result4 = await cheapFunction(true);
 
 ## Errors
 
-The actual error thrown only occurs if the function was being invoked. The rest are rejected with `'async_error'`. I consider this a best practice as throwing the same error multiple times when it only really occured once feels incorrect.
+The actual error thrown only occurs if the function was actually running. The rest are rejected with `'async_error'`. I consider this a best practice as throwing the same error multiple times when it only really occured once feels incorrect.
 
 If an error is thrown the cache is cleared.
 
