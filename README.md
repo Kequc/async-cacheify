@@ -12,6 +12,7 @@ const cacheify = require('async-cacheify');
 async function expensiveFunction () {
     return await expensiveThing('x', 'y', 'z');
 }
+
 const cheapFunction = cacheify(expensiveFunction);
 
 const results = await Promise.all([
@@ -39,6 +40,7 @@ const cacheify = require('async-cacheify');
 async function expensiveFunction (x, y) {
     return await expensiveThing(x, y, 'z');
 }
+
 const cheapFunction = cacheify(expensiveFunction);
 
 const result1 = await cheapFunction('x', 'y');
@@ -49,7 +51,7 @@ const result4 = await cheapFunction('x', 'y');
 
 ## Cache expiry
 
-It is possible to set a cache expiry so that the function will execute again, the example below uses a 1000 ms cooldown.
+It is possible to set a cache expiry so that the function will execute again whenever the data gets old. The following example demonstrates a 1000ms cooldown.
 
 ```javascript
 const cacheify = require('async-cacheify');
@@ -57,6 +59,7 @@ const cacheify = require('async-cacheify');
 async function expensiveFunction (x, y) {
     return await expensiveThing(x, y, 'z');
 }
+
 const cheapFunction = cacheify(expensiveFunction, 1000);
 ```
 
@@ -70,6 +73,7 @@ const cacheify = require('async-cacheify');
 async function expensiveFunction (x, y) {
     return await expensiveThing(x, y, 'z');
 }
+
 const cheapFunction = cacheify(expensiveFunction, 0);
 
 const [result1, result2] = await Promise.all([
@@ -88,6 +92,7 @@ const cacheify = require('async-cacheify');
 async function expensiveFunction (x, y) {
     return await expensiveThing(x, y, 'z');
 }
+
 const cheapFunction = cacheify(expensiveFunction);
 
 const result1 = await cheapFunction('x', 'y');
@@ -104,6 +109,7 @@ const cacheify = require('async-cacheify');
 async function expensiveFunction (x, y) {
     return await expensiveThing(x, y, 'z');
 }
+
 const cheapFunction = cacheify(expensiveFunction);
 
 const result1 = await cheapFunction('x', 'y');
@@ -124,6 +130,7 @@ const cacheify = require('async-cacheify');
 async function expensiveFunction () {
     throw new Error('Kabooooooom!');
 }
+
 const cheapFunction = cacheify(expensiveFunction);
 
 try {
