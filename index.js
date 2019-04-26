@@ -10,10 +10,9 @@ function asyncCacheify (promise, ms) {
 
     async function cached (force = false) {
         if (loading) {
-            await new Promise((resolve, reject) => {
+            return await new Promise((resolve, reject) => {
                 waiting.push({ resolve, reject });
             });
-            return result;
         }
 
         if (force) {
@@ -26,34 +25,29 @@ function asyncCacheify (promise, ms) {
 
         try {
             loading = true;
-            result = await promise();
+            const _result = await promise();
+            result = _result;
             resultAt = Date.now();
             loading = false;
 
-            setTimeout(resolveAll, 0);
+            setTimeout(function resolveAll() {
+                while (waiting.length > 0) {
+                    waiting.shift().resolve(_result);
+                }
+            }, 0);
 
             return result;
         } catch (e) {
             resultAt = undefined;
             loading = false;
 
-            setTimeout(rejectAll, 0);
+            setTimeout(function rejectAll() {
+                while (waiting.length > 0) {
+                    waiting.shift().reject(e);
+                }
+            }, 0);
 
             throw e;
-        }
-    }
-
-    function resolveAll() {
-        while (waiting.length > 0) {
-            waiting.shift().resolve();
-        }
-    }
-
-    function rejectAll() {
-        const error = new Error('Async operation failed.');
-        error.name = 'async_error';
-        while (waiting.length > 0) {
-            waiting.shift().reject(error);
         }
     }
 

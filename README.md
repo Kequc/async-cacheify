@@ -75,9 +75,7 @@ const result4 = await cheapFunction(true);
 
 ## Errors
 
-The actual error thrown only occurs once every time it occurs. If anything it would have shared the result with were waiting they are rejected with `'async_error'` afterward. I consider this a best practice as throwing the same error multiple times when it only really occured once feels incorrect.
-
-If an error is thrown the cache is cleared.
+Any error thrown throws for all, and then the cache is cleared. Therefore further invocations will keep trying to get it to work until there is a cache again.
 
 ```javascript
 const cacheify = require('async-cacheify');

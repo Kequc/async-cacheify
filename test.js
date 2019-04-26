@@ -152,6 +152,5 @@ it('throws all when results were queued', async () => {
     await Promise.all([cacheified().catch(add), cacheified().catch(add), cacheified().catch(add), cacheified().catch(add)]);
     assert.strict.equal(count, 1);
     assert.strict.equal(results.length, 4);
-    assert.strict.equal(results.filter(result => result.message === 'fake-error').length, 1);
-    assert.strict.equal(results.filter(result => result.name === 'async_error').length, 3);
+    assert.strict.equal(results.filter(result => result.message === 'fake-error').length, 4);
 });
