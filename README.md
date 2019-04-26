@@ -1,10 +1,10 @@
 # async-cacheify
 
-Used for cacheing the result of an async function so that you only run it once.
+Wrapper for async functions.
 
 ## Usage
 
-In the following implementation we can expect `expensiveFunction` is something we don't want to run very often. So we wrap it with this library, for the lifetime of the application it will only run the first time.
+We can expect `expensiveFunction` is something we don't want to run very often. So we wrap it with this library, for the lifetime of the application it will only run the first time.
 
 ```javascript
 const cacheify = require('async-cacheify');
@@ -13,17 +13,15 @@ const cheapFunction = cacheify(async function expensiveFunction () {
     return await expensiveThing('x', 'y', 'z');
 });
 
-(async function myApplication () {
-    const results = await Promise.all([
-        cheapFunction(),
-        cheapFunction(),
-        cheapFunction(),
-        cheapFunction(),
-        cheapFunction(),
-        cheapFunction(),
-        cheapFunction()
-    ]);
-})();
+const results = await Promise.all([
+    cheapFunction(),
+    cheapFunction(),
+    cheapFunction(),
+    cheapFunction(),
+    cheapFunction(),
+    cheapFunction(),
+    cheapFunction()
+]);
 ```
 
 We are able to run `cheapFunction` a lot for free.
@@ -55,15 +53,7 @@ async function expensiveFunction () {
 
 const cheapFunction = cacheify(expensiveFunction, 0);
 
-(async function myApplication () {
-    const [
-        result1,
-        result2
-    ] = await Promise.all([
-        cheapFunction(),
-        cheapFunction()
-    ]);
-})();
+const [result1, result2] = await Promise.all([cheapFunction(), cheapFunction()]);
 ```
 
 ## Cache breaking
@@ -77,17 +67,15 @@ const cheapFunction = cacheify(async function expensiveFunction () {
     return await expensiveThing('x', 'y', 'z');
 });
 
-(async function myApplication () {
-    const result1 = await cheapFunction();
-    const result2 = await cheapFunction(true);
-    const result3 = await cheapFunction();
-    const result4 = await cheapFunction(true);
-})();
+const result1 = await cheapFunction();
+const result2 = await cheapFunction(true);
+const result3 = await cheapFunction();
+const result4 = await cheapFunction(true);
 ```
 
 ## Errors
 
-Errors occur as you would expect, except the actual error thrown only occurs if the function is invoked. The rest are rejected with `'async_error'`. I consider this a best practice as throwing the same error multiple times feels incorrect.
+The actual error thrown only occurs if the function was being invoked. The rest are rejected with `'async_error'`. I consider this a best practice as throwing the same error multiple times when it only really occured once feels incorrect.
 
 If an error is thrown the cache is cleared.
 
