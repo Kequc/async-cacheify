@@ -1,0 +1,26 @@
+{
+    "name": "async-cacheify",
+    "version": "1.0.0",
+    "description": "Wrapper for async functions",
+    "main": "index.js",
+    "scripts": {
+        "test": "node test.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/Kequc/async-cacheify.git"
+    },
+    "keywords": [
+        "async",
+        "await",
+        "cache",
+        "cacheify",
+        "promise"
+    ],
+    "author": "Nathan Lunde-Berry",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/Kequc/async-cacheify/issues"
+    },
+    "homepage": "https://github.com/Kequc/async-cacheify#readme"
+}
