@@ -84,7 +84,7 @@ const [result1, result2] = await Promise.all([
 
 ## Cache breaking
 
-It is possible to force the function to run by using `force`, the example below breaks the cache twice. If there is already an invocation running that invocation takes precidence and will share the result.
+It is possible to force the function to run by using `flush`, the example below breaks the cache twice. If there is already an invocation running that invocation takes precidence and will share the result.
 
 ```javascript
 const cacheify = require('async-cacheify');
@@ -96,9 +96,9 @@ async function expensiveFunction (x, y) {
 const cheapFunction = cacheify(expensiveFunction);
 
 const result1 = await cheapFunction('x', 'y');
-const result2 = await cheapFunction.force('x', 'y');
+const result2 = await cheapFunction.flush('x', 'y');
 const result3 = await cheapFunction('x', 'y');
-const result4 = await cheapFunction.force('x', 'y');
+const result4 = await cheapFunction.flush('x', 'y');
 ```
 
 You can clear the cache for the entire function and not just specific parameters by using `clear`.

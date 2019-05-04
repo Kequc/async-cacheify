@@ -24,6 +24,6 @@
     },
     "homepage": "https://github.com/Kequc/async-cacheify#readme",
     "dependencies": {
-        "param-to-string": "^1.0.0"
+        "param-to-string": "^1.1.0"
     }
 }

@@ -72,16 +72,16 @@ it('returns uncached result after timeout', async () => {
     assert.strict.equal(result4, 'fake-result');
 });
 
-it('forces the cache to reset when force is used', async () => {
+it('forces the cache to reset when flush is used', async () => {
     let count = 0;
     const cacheified = asyncCacheify(async function () {
         count++;
         return 'fake-result';
     });
-    const result1 = await cacheified.force();
+    const result1 = await cacheified.flush();
     assert.strict.equal(count, 1);
     assert.strict.equal(result1, 'fake-result');
-    const result2 = await cacheified.force();
+    const result2 = await cacheified.flush();
     assert.strict.equal(count, 2);
     assert.strict.equal(result2, 'fake-result');
 });

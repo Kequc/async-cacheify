@@ -3,22 +3,11 @@ module.exports = asyncCacheify;
 const crypto = require('crypto');
 const paramToString = require('param-to-string');
 
-function asyncCacheify (promise, ms) {
+function asyncCacheify (promise, ttl) {
     const CACHE = {};
 
-    async function cached (...params) {
-        const hash = md5(params);
-
-        if (!CACHE[hash]) {
-            CACHE[hash] = {
-                waiting: [],
-                loading: false,
-                result: undefined,
-                resultAt: undefined
-            };
-        }
-
-        const cache = CACHE[hash];
+    async function cacheified (...params) {
+        const cache = getCache(params);
 
         if (cache.loading) {
             return await new Promise((resolve, reject) => {
@@ -26,20 +15,20 @@ function asyncCacheify (promise, ms) {
             });
         }
 
-        if (hasCache(cache.resultAt, ms)) {
+        if (hasResult(cache.resultAt, ttl)) {
             return cache.result;
         }
 
         try {
             cache.loading = true;
-            const _result = await promise(...params);
-            cache.result = _result;
+            const result = await promise(...params);
+            cache.result = result;
             cache.resultAt = Date.now();
             cache.loading = false;
 
             setTimeout(function resolveAll() {
                 while (cache.waiting.length > 0) {
-                    cache.waiting.shift().resolve(_result);
+                    cache.waiting.shift().resolve(result);
                 }
             }, 0);
 
@@ -58,9 +47,24 @@ function asyncCacheify (promise, ms) {
         }
     }
 
-    async function force (...params) {
+    function getCache (params) {
+        const hash = md5(params);
+
+        if (!CACHE[hash]) {
+            CACHE[hash] = {
+                waiting: [],
+                loading: false,
+                result: undefined,
+                resultAt: undefined
+            };
+        }
+
+        return CACHE[hash];
+    }
+
+    async function flush (...params) {
         delete CACHE[md5(params)];
-        return await cached(...params);
+        return await cacheified(...params);
     }
 
     function clear () {
@@ -70,18 +74,18 @@ function asyncCacheify (promise, ms) {
         }
     }
 
-    cached.force = force;
-    cached.clear = clear;
+    cacheified.flush = flush;
+    cacheified.clear = clear;
 
-    return cached;
+    return cacheified;
 }
 
 function md5 (params) {
     return crypto.createHash('md5').update(paramToString(params)).digest('hex');
 }
 
-function hasCache (resultAt, ms) {
+function hasResult (resultAt, ttl) {
     if (!resultAt) return false;
-    if (typeof ms === 'number' && (resultAt + ms) < Date.now()) return false;
+    if (typeof ttl === 'number' && (resultAt + ttl) < Date.now()) return false;
     return true;
 }
