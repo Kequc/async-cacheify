@@ -82,9 +82,9 @@ const [result1, result2] = await Promise.all([
 ]);
 ```
 
-## Cache breaking
+## Flush
 
-It is possible to force the function to run by using `flush`, the example below breaks the cache twice. If there is already an invocation running that invocation takes precidence and will share the result.
+It is possible to force the function to run by using `flush`, the example below flushes the cache twice. If there is already an invocation running that invocation will finish in the background and complete as normal but new invocations will wait for the new one.
 
 ```javascript
 const cacheify = require('async-cacheify');
@@ -100,6 +100,8 @@ const result2 = await cheapFunction.flush('x', 'y');
 const result3 = await cheapFunction('x', 'y');
 const result4 = await cheapFunction.flush('x', 'y');
 ```
+
+## Clear
 
 You can clear the cache for the entire function and not just specific parameters by using `clear`.
 
@@ -122,7 +124,7 @@ cheapFunction.clear();
 
 ## Errors
 
-Any error thrown clears the cache for the parameters provided. Therefore further invocations will keep trying to get it to work until there is a cache again.
+Any error thrown does not store a cache. Therefore further invocations will keep trying to get it to work until there is a cache again.
 
 ```javascript
 const cacheify = require('async-cacheify');
