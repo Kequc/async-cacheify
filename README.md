@@ -49,7 +49,7 @@ const result3 = await cheapFunction('q', 'y');
 const result4 = await cheapFunction('x', 'y');
 ```
 
-## Cache expiry
+## Expiry
 
 It is possible to set a cache expiry so that the function will execute again whenever the data gets old. The following example demonstrates a 1000ms cooldown.
 
