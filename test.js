@@ -78,12 +78,30 @@ it('forces the cache to reset when flush is used', async () => {
         count++;
         return `fake-result-${count}`;
     });
-    const result1 = await cacheified.flush();
+    const result1 = await cacheified();
     assert.strict.equal(count, 1);
     assert.strict.equal(result1, 'fake-result-1');
-    const result2 = await cacheified.flush();
+    cacheified.flush();
+    const result2 = await cacheified();
     assert.strict.equal(count, 2);
     assert.strict.equal(result2, 'fake-result-2');
+});
+
+it('forces the cache to reset when flush is used with params', async () => {
+    let count = 0;
+    const cacheified = asyncCacheify(async function () {
+        count++;
+        return `fake-result-${count}`;
+    });
+    const [result1, result2] = await Promise.all([cacheified(11, 21), cacheified(11)]);
+    assert.strict.equal(count, 2);
+    assert.strict.equal(result1, 'fake-result-1');
+    assert.strict.equal(result2, 'fake-result-2');
+    cacheified.flush(11, 21);
+    const [result3, result4] = await Promise.all([cacheified(11, 21), cacheified(11)]);
+    assert.strict.equal(count, 3);
+    assert.strict.equal(result3, 'fake-result-3');
+    assert.strict.equal(result4, 'fake-result-2');
 });
 
 it('still resolves originals when flush is used', async () => {
@@ -95,7 +113,8 @@ it('still resolves originals when flush is used', async () => {
         return `fake-result-${_count}`;
     });
     const promise = Promise.all([cacheified(), cacheified()]);
-    const result3 = await cacheified.flush();
+    cacheified.flush();
+    const result3 = await cacheified();
     const [result1, result2] = await promise;
     assert.strict.equal(count, 2);
     assert.strict.equal(result1, 'fake-result-1');
@@ -103,7 +122,7 @@ it('still resolves originals when flush is used', async () => {
     assert.strict.equal(result3, 'fake-result-2');
 });
 
-it('clears the cache when clear is used', async () => {
+it('clears the cache when flushAll is used', async () => {
     let count = 0;
     const cacheified = asyncCacheify(async function () {
         count++;
@@ -112,13 +131,13 @@ it('clears the cache when clear is used', async () => {
     const result1 = await cacheified();
     assert.strict.equal(count, 1);
     assert.strict.equal(result1, 'fake-result-1');
-    cacheified.clear();
+    cacheified.flushAll();
     const result2 = await cacheified();
     assert.strict.equal(count, 2);
     assert.strict.equal(result2, 'fake-result-2');
 });
 
-it('still resolves originals when clear is used', async () => {
+it('still resolves originals when flushAll is used', async () => {
     let count = 0;
     const cacheified = asyncCacheify(async function () {
         count++;
@@ -127,7 +146,7 @@ it('still resolves originals when clear is used', async () => {
         return `fake-result-${_count}`;
     });
     const promise = Promise.all([cacheified(), cacheified()]);
-    cacheified.clear();
+    cacheified.flushAll();
     const [result1, result2] = await promise;
     assert.strict.equal(count, 1);
     assert.strict.equal(result1, 'fake-result-1');

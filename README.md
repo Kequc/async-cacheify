@@ -84,7 +84,9 @@ const [result1, result2] = await Promise.all([
 
 ## Flush
 
-It is possible to force the function to run by using `flush`, the example below flushes the cache twice. If there is already an invocation running that invocation will finish in the background and complete as normal but new invocations will wait for the new one.
+It is possible to force the function to run by using `flush`.
+
+The example below flushes the cache twice and runs the function three times. If there is already an invocation running that invocation will finish in the background and complete as normal but new invocations will wait for the new one.
 
 ```javascript
 const cacheify = require('async-cacheify');
@@ -96,14 +98,16 @@ async function expensiveFunction (x, y) {
 const cheapFunction = cacheify(expensiveFunction);
 
 const result1 = await cheapFunction('x', 'y');
-const result2 = await cheapFunction.flush('x', 'y');
+cheapFunction.flush('x', 'y');
+const result2 = await cheapFunction('x', 'y');
 const result3 = await cheapFunction('x', 'y');
-const result4 = await cheapFunction.flush('x', 'y');
+cheapFunction.flush('x', 'y')
+const result4 = await cheapFunction('x', 'y');
 ```
 
-## Clear
+## Flush all
 
-You can clear the cache for the entire function and not just specific parameters by using `clear`.
+You can clear the cache for the entire function and not just specific parameters by using `flushAll`.
 
 ```javascript
 const cacheify = require('async-cacheify');
@@ -116,10 +120,10 @@ const cheapFunction = cacheify(expensiveFunction);
 
 const result1 = await cheapFunction('x', 'y');
 const result2 = await cheapFunction('x', 'y');
-cheapFunction.clear();
+cheapFunction.flushAll();
 const result3 = await cheapFunction('x', 'y');
 const result4 = await cheapFunction('q', 'y');
-cheapFunction.clear();
+cheapFunction.flushAll();
 ```
 
 ## Errors

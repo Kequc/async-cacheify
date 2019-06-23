@@ -7,7 +7,7 @@ function asyncCacheify (promise, ttl) {
     const CACHE = {};
 
     async function cacheified (...params) {
-        const cache = getCache(params);
+        const cache = _getCache(params);
 
         if (cache.loading) {
             return await new Promise((resolve, reject) => {
@@ -47,7 +47,7 @@ function asyncCacheify (promise, ttl) {
         }
     }
 
-    function getCache (params) {
+    function _getCache (params) {
         const hash = md5(params);
 
         if (!CACHE[hash]) {
@@ -62,12 +62,11 @@ function asyncCacheify (promise, ttl) {
         return CACHE[hash];
     }
 
-    async function flush (...params) {
+    function flush (...params) {
         delete CACHE[md5(params)];
-        return await cacheified(...params);
     }
 
-    function clear () {
+    function flushAll () {
         const keys = Object.keys(CACHE);
         while (keys.length > 0) {
             delete CACHE[keys.shift()];
@@ -75,7 +74,7 @@ function asyncCacheify (promise, ttl) {
     }
 
     cacheified.flush = flush;
-    cacheified.clear = clear;
+    cacheified.flushAll = flushAll;
 
     return cacheified;
 }

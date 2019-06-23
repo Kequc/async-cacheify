@@ -1,11 +1,14 @@
 {
     "name": "async-cacheify",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "Wrapper for async functions",
     "main": "index.js",
     "scripts": {
         "test": "node test.js"
     },
+    "files": [
+        "index.js"
+    ],
     "repository": {
         "type": "git",
         "url": "git+ssh://git@github.com/Kequc/async-cacheify.git"
